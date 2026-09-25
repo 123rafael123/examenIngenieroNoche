@@ -4,6 +4,7 @@ import com.company.inventory.dao.ICategoryDao;
 import com.company.inventory.model.Category;
 import com.company.inventory.respnose.CategoryResponseRest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.InjectMocks;
@@ -19,6 +20,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@DisplayName("Pruebas del servicio de categorías")
 class CategoryServiceImplTest {
 
     @InjectMocks
@@ -41,6 +43,7 @@ class CategoryServiceImplTest {
      * y el estado de la respuesta HTTP sea OK
      */
     @Test
+    @DisplayName("Lista las categorías correctamente")
     void testSearchSucess() {
 
         //Given
@@ -66,6 +69,7 @@ class CategoryServiceImplTest {
      * y el estado de la respuesta HTTP sea INTERNAL_SERVER_ERROR
      */
     @Test
+    @DisplayName("Retorna error interno cuando falla el listado de categorías")
     void testSearchException() {
 
         //Given
@@ -87,6 +91,7 @@ class CategoryServiceImplTest {
      * Test para probar guardar una categoria
      */
     @Test
+    @DisplayName("Guarda una categoría correctamente")
     void testSaveCategorySuccess() {
         // Given
         Category category = new Category();
@@ -111,6 +116,7 @@ class CategoryServiceImplTest {
      * Test para probar retorno nullo al guardar una categoria
      */
     @Test
+    @DisplayName("Retorna solicitud incorrecta cuando el DAO no guarda la categoría")
     void testSaveCategoryDaoReturnsNull() {
         // Given
         Category category = new Category();
@@ -135,6 +141,7 @@ class CategoryServiceImplTest {
      * Test para probar una excepción al guardar una categoria
      */
     @Test
+    @DisplayName("Retorna error interno cuando falla el guardado de la categoría")
     void testSaveCategoryException() {
         // Given
         Category category = new Category();
@@ -156,6 +163,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
+    @DisplayName("Busca una categoría existente por identificador")
     void testSearchByIdSuccess() {
         // Given
         Category category = list.get(0);
@@ -174,6 +182,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna no encontrado al buscar una categoría inexistente")
     void testSearchByIdNotFound() {
         // Given
         when(categoryDao.findById(99L)).thenReturn(Optional.empty());
@@ -190,6 +199,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla la búsqueda de categoría por identificador")
     void testSearchByIdException() {
         // Given
         when(categoryDao.findById(1L)).thenThrow(new RuntimeException("Error al consultar por id"));
@@ -206,6 +216,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
+    @DisplayName("Actualiza una categoría correctamente")
     void testUpdateCategorySuccess() {
         // Given
         Category storedCategory = list.get(0);
@@ -227,6 +238,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna no encontrado al actualizar una categoría inexistente")
     void testUpdateCategoryNotFound() {
         // Given
         Category newValues = new Category(null, "Alimentos", "Productos alimenticios");
@@ -244,6 +256,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna solicitud incorrecta cuando el DAO no actualiza la categoría")
     void testUpdateCategoryDaoReturnsNull() {
         // Given
         Category storedCategory = list.get(0);
@@ -263,6 +276,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla la actualización de la categoría")
     void testUpdateCategoryException() {
         // Given
         Category newValues = new Category(null, "Alimentos", "Productos alimenticios");
@@ -280,6 +294,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
+    @DisplayName("Elimina una categoría correctamente")
     void testDeleteByIdSuccess() {
         // Given
         doNothing().when(categoryDao).deleteById(1L);
@@ -296,6 +311,7 @@ class CategoryServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla la eliminación de la categoría")
     void testDeleteByIdException() {
         // Given
         doThrow(new RuntimeException("Error al eliminar")).when(categoryDao).deleteById(1L);

@@ -6,6 +6,7 @@ import com.company.inventory.model.Category;
 import com.company.inventory.model.Product;
 import com.company.inventory.respnose.ProductResponseRest;
 import com.company.inventory.util.Util;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -22,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Pruebas del servicio de productos")
 class ProductServiceImplTest {
 
     @InjectMocks
@@ -34,6 +36,7 @@ class ProductServiceImplTest {
     private IProductDao productDao;
 
     @Test
+    @DisplayName("Guarda un producto cuando la categoría existe")
     void testSaveProductWithExistingCategory() {
         // Given
         Category category = createCategory();
@@ -58,6 +61,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna no encontrado al guardar con una categoría inexistente")
     void testSaveProductWithMissingCategory() {
         // Given
         Product product = createProduct();
@@ -77,6 +81,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Busca un producto existente por identificador y descomprime su imagen")
     void testSearchByIdExistingProduct() {
         // Given
         Product product = createProduct();
@@ -98,6 +103,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna no encontrado al buscar un producto inexistente")
     void testSearchByIdMissingProduct() {
         // Given
         when(productDao.findById(99L)).thenReturn(Optional.empty());
@@ -114,6 +120,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna solicitud incorrecta cuando el DAO no guarda el producto")
     void testSaveProductDaoReturnsNull() {
         // Given
         Category category = createCategory();
@@ -133,6 +140,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla el guardado del producto")
     void testSaveProductDaoException() {
         // Given
         Category category = createCategory();
@@ -152,6 +160,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla la búsqueda de producto por identificador")
     void testSearchByIdDaoException() {
         // Given
         when(productDao.findById(1L)).thenThrow(new RuntimeException("Error del DAO"));
@@ -167,6 +176,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Busca productos por nombre y descomprime sus imágenes")
     void testSearchByNameSuccess() {
         // Given
         byte[] firstPicture = new byte[]{1, 2, 3, 4};
@@ -191,6 +201,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna no encontrado cuando ningún producto coincide con el nombre")
     void testSearchByNameNotFound() {
         // Given
         when(productDao.findByNameContainingIgnoreCase("inexistente")).thenReturn(List.of());
@@ -206,6 +217,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla la búsqueda de productos por nombre")
     void testSearchByNameDaoException() {
         // Given
         when(productDao.findByNameContainingIgnoreCase("arroz"))
@@ -223,6 +235,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Lista los productos y descomprime sus imágenes")
     void testSearchProductsSuccess() {
         // Given
         byte[] firstPicture = new byte[]{1, 2, 3, 4};
@@ -247,6 +260,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna no encontrado cuando la lista de productos está vacía")
     void testSearchProductsEmpty() {
         // Given
         when(productDao.findAll()).thenReturn(List.of());
@@ -262,6 +276,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla el listado de productos")
     void testSearchProductsDaoException() {
         // Given
         when(productDao.findAll()).thenThrow(new RuntimeException("Error del DAO"));
@@ -277,6 +292,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Actualiza un producto correctamente")
     void testUpdateProductSuccess() {
         // Given
         Category category = createCategory();
@@ -308,6 +324,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna no encontrado al actualizar con una categoría inexistente")
     void testUpdateProductWithMissingCategory() {
         // Given
         Product newValues = createProduct();
@@ -327,6 +344,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna no encontrado al actualizar un producto inexistente")
     void testUpdateMissingProduct() {
         // Given
         Category category = createCategory();
@@ -347,6 +365,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna solicitud incorrecta cuando el DAO no actualiza el producto")
     void testUpdateProductDaoReturnsNull() {
         // Given
         Category category = createCategory();
@@ -368,6 +387,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla el DAO de categorías durante la actualización")
     void testUpdateProductCategoryDaoException() {
         // Given
         Product newValues = createProduct();
@@ -385,6 +405,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla la búsqueda del producto a actualizar")
     void testUpdateProductFindDaoException() {
         // Given
         Category category = createCategory();
@@ -405,6 +426,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla el guardado del producto actualizado")
     void testUpdateProductSaveDaoException() {
         // Given
         Category category = createCategory();
@@ -425,6 +447,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Elimina un producto correctamente")
     void testDeleteProductSuccess() {
         // Given
         doNothing().when(productDao).deleteById(1L);
@@ -440,6 +463,7 @@ class ProductServiceImplTest {
     }
 
     @Test
+    @DisplayName("Retorna error interno cuando falla la eliminación del producto")
     void testDeleteProductDaoException() {
         // Given
         doThrow(new RuntimeException("Error del DAO")).when(productDao).deleteById(1L);
