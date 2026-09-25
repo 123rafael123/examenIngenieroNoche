@@ -24,7 +24,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 @ExtendWith(MockitoExtension.class)
 class CategoryRestControllerTest {
 
@@ -311,5 +311,29 @@ class CategoryRestControllerTest {
         category.setName("Lacteos");
         category.setDescription("Distintos tipos de lacteos");
         list.add(category);
+    }
+
+    @Test
+    void testExportCategoriesToExcel() throws Exception {
+        // Given
+        CategoryResponseRest response = new CategoryResponseRest();
+        response.getCategoryResponse().setCategory(list);
+        response.setMetadata(
+                "Respuesta ok",
+                "00",
+                "Categorias encontradas"
+        );
+
+        when(service.search()).thenReturn(
+                new ResponseEntity<>(response, HttpStatus.OK)
+        );
+
+        // When y Then
+        mockMvc.perform(get("/api/v1/categories/export/excel"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(
+                        "Content-Disposition",
+                        "attachment; filename=result_category.xlsx"
+                ));
     }
 }

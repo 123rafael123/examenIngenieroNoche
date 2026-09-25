@@ -1,64 +1,337 @@
 {
   "info": {
     "_postman_id": "1c3f4e0a-7db0-4f55-8fbb-7c6f3f2c7f20",
-    "name": "Inventory - Category Export",
-    "description": "Prueba del endpoint que exporta las categorias a un archivo Excel.",
+    "name": "Inventory SP3 - Categories and Products",
+    "description": "Pruebas funcionales de categorías y productos. Antes de ejecutar Guardar producto y Actualizar producto, seleccione un archivo local en el campo picture.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080"
-    }
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "categoryId", "value": "1" },
+    { "key": "productId", "value": "1" },
+    { "key": "productName", "value": "Producto Postman" }
   ],
   "item": [
     {
-      "name": "Exportar categorias a Excel",
+      "name": "01 - Listar categorías",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Contiene categoryResponse', () => pm.expect(pm.response.json()).to.have.property('categoryResponse'));"
+          ]
+        }
+      }],
       "request": {
         "method": "GET",
-        "header": [
-          {
-            "key": "Accept",
-            "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-          }
-        ],
-        "url": {
-          "raw": "{{baseUrl}}/api/v1/categories/export/excel",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "v1",
-            "categories",
-            "export",
-            "excel"
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/categories"
+      },
+      "response": []
+    },
+    {
+      "name": "02 - Guardar categoría",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "pm.test('Devuelve la categoría guardada', () => pm.expect(json.categoryResponse.category).to.be.an('array').that.is.not.empty);",
+            "if (json.categoryResponse?.category?.[0]?.id) pm.collectionVariables.set('categoryId', json.categoryResponse.category[0].id);"
+          ]
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Categoría Postman\",\n  \"description\": \"Categoría creada por pruebas funcionales\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/v1/categories"
+      },
+      "response": []
+    },
+    {
+      "name": "03 - Buscar categoría por ID",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Devuelve una categoría', () => pm.expect(pm.response.json().categoryResponse.category).to.be.an('array').that.is.not.empty);"
+          ]
+        }
+      }],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/categories/{{categoryId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "04 - Actualizar categoría",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Incluye metadata', () => pm.expect(pm.response.json()).to.have.property('metadata'));"
+          ]
+        }
+      }],
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Categoría Postman actualizada\",\n  \"description\": \"Categoría actualizada por Postman\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{baseUrl}}/api/v1/categories/{{categoryId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "05 - Categoría inexistente",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 404', () => pm.response.to.have.status(404));",
+            "pm.test('Incluye metadata de error', () => pm.expect(pm.response.json()).to.have.property('metadata'));"
+          ]
+        }
+      }],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/categories/999999"
+      },
+      "response": []
+    },
+    {
+      "name": "06 - Exportar categorías a Excel",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Es un archivo descargable', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/octet-stream'));",
+            "pm.test('Incluye nombre del archivo', () => pm.expect(pm.response.headers.get('Content-Disposition')).to.include('result_category.xlsx'));"
+          ]
+        }
+      }],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }],
+        "url": "{{baseUrl}}/api/v1/categories/export/excel"
+      },
+      "response": []
+    },
+    {
+      "name": "07 - Listar productos",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Contiene productos', () => pm.expect(pm.response.json()).to.have.property('product'));"
+          ]
+        }
+      }],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/products"
+      },
+      "response": []
+    },
+    {
+      "name": "08 - Guardar producto",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "pm.test('Devuelve el producto guardado', () => pm.expect(json.product.products).to.be.an('array').that.is.not.empty);",
+            "if (json.product?.products?.[0]?.id) pm.collectionVariables.set('productId', json.product.products[0].id);"
+          ]
+        }
+      }],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "picture", "type": "file", "src": null, "description": "Seleccione una imagen local antes de ejecutar" },
+            { "key": "name", "value": "{{productName}}", "type": "text" },
+            { "key": "price", "value": "100", "type": "text" },
+            { "key": "account", "value": "5", "type": "text" },
+            { "key": "categoryId", "value": "{{categoryId}}", "type": "text" }
           ]
         },
-        "description": "Descarga las categorias de la base de datos como result_category.xlsx."
+        "url": "{{baseUrl}}/api/v1/products"
       },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('La respuesta es exitosa', function () {",
-              "    pm.response.to.have.status(200);",
-              "});",
-              "",
-              "pm.test('La respuesta es un archivo Excel', function () {",
-              "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/octet-stream');",
-              "});",
-              "",
-              "pm.test('La respuesta incluye el nombre del archivo', function () {",
-              "    pm.expect(pm.response.headers.get('Content-Disposition')).to.include('result_category.xlsx');",
-              "});"
-            ]
-          }
+      "response": []
+    },
+    {
+      "name": "09 - Buscar producto por ID",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Devuelve un producto', () => pm.expect(pm.response.json().product.products).to.be.an('array').that.is.not.empty);"
+          ]
         }
-      ]
+      }],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/products/{{productId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "10 - Buscar producto por nombre",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Devuelve productos', () => pm.expect(pm.response.json().product.products).to.be.an('array').that.is.not.empty);"
+          ]
+        }
+      }],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/products/filter/{{productName}}"
+      },
+      "response": []
+    },
+    {
+      "name": "11 - Actualizar producto",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Devuelve el producto actualizado', () => pm.expect(pm.response.json().product.products).to.be.an('array').that.is.not.empty);"
+          ]
+        }
+      }],
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "picture", "type": "file", "src": null, "description": "Seleccione una imagen local antes de ejecutar" },
+            { "key": "name", "value": "{{productName}} actualizado", "type": "text" },
+            { "key": "price", "value": "150", "type": "text" },
+            { "key": "account", "value": "7", "type": "text" },
+            { "key": "categoryId", "value": "{{categoryId}}", "type": "text" }
+          ]
+        },
+        "url": "{{baseUrl}}/api/v1/products/{{productId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "12 - Producto inexistente",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 404', () => pm.response.to.have.status(404));",
+            "pm.test('Incluye metadata de error', () => pm.expect(pm.response.json()).to.have.property('metadata'));"
+          ]
+        }
+      }],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/products/999999"
+      },
+      "response": []
+    },
+    {
+      "name": "13 - Exportar productos a Excel",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Es un archivo descargable', () => pm.expect(pm.response.headers.get('Content-Type')).to.include('application/octet-stream'));",
+            "pm.test('Incluye nombre del archivo', () => pm.expect(pm.response.headers.get('Content-Disposition')).to.include('result_product.xlsx'));"
+          ]
+        }
+      }],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }],
+        "url": "{{baseUrl}}/api/v1/products/export/excel"
+      },
+      "response": []
+    },
+    {
+      "name": "14 - Eliminar producto",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Incluye metadata', () => pm.expect(pm.response.json()).to.have.property('metadata'));"
+          ]
+        }
+      }],
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/products/{{productId}}"
+      },
+      "response": []
+    },
+    {
+      "name": "15 - Eliminar categoría",
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Estado 200', () => pm.response.to.have.status(200));",
+            "pm.test('Incluye metadata', () => pm.expect(pm.response.json()).to.have.property('metadata'));"
+          ]
+        }
+      }],
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{baseUrl}}/api/v1/categories/{{categoryId}}"
+      },
+      "response": []
     }
-    ]
+  ]
 }

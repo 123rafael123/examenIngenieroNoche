@@ -21,7 +21,9 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
 import java.util.List;
+import com.company.inventory.model.Category;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -437,6 +439,108 @@ class ProductRestControllerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.metadata").exists());
+    }
+
+    @Test
+    void testSaveProductWithoutPicture() throws Exception {
+        mockMvc.perform(multipart("/api/v1/products")
+                        .param("name", "Laptop")
+                        .param("price", "5000")
+                        .param("account", "10")
+                        .param("categoryId", "1")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testUpdateProductWithoutPicture() throws Exception {
+        Long productId = 1L;
+
+        mockMvc.perform(multipart(
+                        "/api/v1/products/{id}",
+                        productId
+                )
+                        .param("name", "Laptop actualizada")
+                        .param("price", "5500")
+                        .param("account", "8")
+                        .param("categoryId", "1")
+                        .with(request -> {
+                            request.setMethod("PUT");
+                            return request;
+                        })
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void testSaveProductInternalServerError() throws Exception {
+        // Given
+        MockMultipartFile picture = new MockMultipartFile(
+                "picture",
+                "laptop.jpg",
+                MediaType.IMAGE_JPEG_VALUE,
+                "imagen de prueba".getBytes()
+        );
+
+        ProductResponseRest response = new ProductResponseRest();
+        response.setMetadata(
+                "respuesta nok",
+                "-1",
+                "Error al guardar producto"
+        );
+
+        when(productService.save(any(Product.class), eq(1L)))
+                .thenReturn(
+                        new ResponseEntity<>(
+                                response,
+                                HttpStatus.INTERNAL_SERVER_ERROR
+                        )
+                );
+
+        // When y Then
+        mockMvc.perform(multipart("/api/v1/products")
+                        .file(picture)
+                        .param("name", "Laptop")
+                        .param("price", "5000")
+                        .param("account", "10")
+                        .param("categoryId", "1")
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.metadata").exists());
+    }
+    @Test
+    void testExportProductsToExcel() throws Exception {
+        // Given
+        Category category = new Category();
+        category.setId(1L);
+        category.setName("Tecnología");
+
+        Product product = new Product();
+        product.setId(1L);
+        product.setName("Laptop");
+        product.setPrice(5000);
+        product.setAccount(10);
+        product.setCategory(category);
+
+        ProductResponseRest response = new ProductResponseRest();
+        response.getProduct().setProducts(List.of(product));
+        response.setMetadata(
+                "Respuesta ok",
+                "00",
+                "Productos encontrados"
+        );
+
+        when(productService.search()).thenReturn(
+                new ResponseEntity<>(response, HttpStatus.OK)
+        );
+
+        // When y Then
+        mockMvc.perform(get("/api/v1/products/export/excel"))
+                .andExpect(status().isOk())
+                .andExpect(header().string(
+                        "Content-Disposition",
+                        "attachment; filename=result_product.xlsx"
+                ));
     }
 }
 
